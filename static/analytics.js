@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     emailInput.addEventListener("input", function () {
         if (!firstTypeTime) {
             firstTypeTime = new Date().getTime();
-            console.log("First character typed at:", firstTypeTime);
+            
         }
     });
 
@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     addButton.addEventListener("click", function () {
         const submitTime = new Date().getTime();
         const timeToSubmit = firstTypeTime ? (submitTime - firstTypeTime) / 1000 : 0;
-
+        console.log("Typing time needed:", timeToSubmit);
         const emailValue = emailInput.value.trim();
         const nameValue = nameInput.value.trim();
 
@@ -104,13 +104,19 @@ document.addEventListener("DOMContentLoaded", function () {
         gtag("event", "error_from_cm_api", {
             event_category: "API Errors",
             event_label: action === "add" ? "Add Subscriber Error" : "Remove Subscriber Error",
-            email_type: emailType
+            email_type: emailType,
+            error_message: errorMessage, 
+            error_type: "server_error", 
+            action_type: action
         });
     
         console.log("Event sent to Google Analytics:", {
             event_category: "API Errors",
             event_label: action === "add" ? "Add Subscriber Error" : "Remove Subscriber Error",
-            email_type: emailType
+            email_type: emailType,
+            error_message: errorMessage, 
+            error_type: "server_error",
+            action_type: action
         });
     };
 
