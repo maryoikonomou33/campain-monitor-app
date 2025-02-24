@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let firstTypeTime = null;
 
-    // πρωτο type
+    // Πρώτο type
     emailInput.addEventListener("input", function () {
         if (!firstTypeTime) {
             firstTypeTime = new Date().getTime();
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // για το add
+    // Για το add
     addButton.addEventListener("click", function () {
         const submitTime = new Date().getTime();
         const timeToSubmit = firstTypeTime ? (submitTime - firstTypeTime) / 1000 : 0;
@@ -32,7 +32,6 @@ document.addEventListener("DOMContentLoaded", function () {
             console.warn("Submission error: Missing input fields");
         }
 
-        
         gtag("event", "add_subscriber", {
             event_category: "Subscription",
             event_label: "Add Subscriber Button",
@@ -47,10 +46,12 @@ document.addEventListener("DOMContentLoaded", function () {
             submission_error: hasError
         });
 
+        updateTotalSubscribers(); // Ενημέρωση user property στο GA
+
         firstTypeTime = null; 
     });
 
-    // για το remove
+    // Για το remove
     document.getElementById("subscriber-list").addEventListener("click", function (event) {
         if (event.target.classList.contains("remove-btn")) {
             console.log("Remove button clicked!");
@@ -77,7 +78,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let emailType = categorizeEmail(emailValue); 
 
-            
             gtag("event", "remove_subscriber", {
                 event_category: "Subscription",
                 event_label: "Remove Subscriber Button",
@@ -89,10 +89,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 removed_position: positionInfo,
                 email_type: emailType
             });
+
+            updateTotalSubscribers(); // Ενημέρωση user property στο GA
         }
     });
 
-    //  errors από CM 
+    // Errors από CM 
     window.trackApiError = function (action, email) {
         const emailType = categorizeEmail(email);
     
@@ -108,10 +110,17 @@ document.addEventListener("DOMContentLoaded", function () {
             email_type: emailType
         });
     };
-    
-    
 
-    
+    // subscribers στο GA
+    function updateTotalSubscribers() {
+        let totalSubscribers = document.querySelectorAll("#subscriber-list li").length;
+
+        if (typeof gtag === "function") {
+            gtag("set", "user_properties", { total_subscribers: totalSubscribers });
+            console.log("Updated total_subscribers in GA4:", totalSubscribers);
+        }
+    }
+
     function categorizeEmail(email) {
         const genericEmailProviders = [
             "gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com", "aol.com", "mail.com"
@@ -127,5 +136,4 @@ document.addEventListener("DOMContentLoaded", function () {
             return "personal";
         }
     }
-
 });

@@ -4,14 +4,23 @@ $(document).ready(function () {
             let $list = $("#subscriber-list");
             $list.empty();
 
+            let totalSubscribers = data.subscribers ? data.subscribers.length : 0; // Υπολογισμός αριθμού subscribers
+
             if (!data.subscribers || data.subscribers.length === 0) {
                 $list.append(`<li class="list-group-item">No subscribers found.</li>`);
-                return;
+            } else {
+                data.subscribers.forEach(sub => {
+                    addSubscriberToUI(sub.email, sub.name);
+                });
             }
 
-            data.subscribers.forEach(sub => {
-                addSubscriberToUI(sub.email, sub.name);
-            });
+            
+            if (typeof gtag === "function") {
+                gtag("set", "user_properties", {
+                    total_subscribers: totalSubscribers
+                });
+                console.log("User property sent to GA4:", { total_subscribers: totalSubscribers });
+            }
         }).fail(function (err) {
             console.error("Error loading subscribers:", err);
         });
@@ -51,7 +60,7 @@ $(document).ready(function () {
             return;
         }
 
-        // προσωρινο disable στο κουμπί για να τα διπλα  requests
+        // προσωρινο disable στο κουμπί για να αποτραπούν διπλά requests
         $("#add-subscriber").prop("disabled", true);
 
         $.ajax({
@@ -63,11 +72,12 @@ $(document).ready(function () {
                 $("#name").val("");
                 $("#email").val("");
                 addSubscriberToUI(email, name);
+                updateTotalSubscribers(); 
             },
             error: function (err) {
                 alert("Failed to add subscriber. Please try again.");
 
-                // τρακ τα λαθη
+                // τρακ τα λάθη
                 trackApiError("add", err.responseText || "Unknown error");
             },
             complete: function () {
@@ -90,18 +100,27 @@ $(document).ready(function () {
             type: 'DELETE',
             success: function (response) {
                 listItem.remove();
-
-                // στέλνω πληροφορίες για το removed subscriber στο GA4
                 trackRemoveSubscriber(email, positionInfo);
+                updateTotalSubscribers(); 
             },
             error: function (err) {
                 alert("Failed to remove subscriber. Please try again.");
 
-                // Καταγραφή λάθους στο GA4
+                
                 trackApiError("remove", err.responseText || "Unknown error");
             }
         });
     };
+
+    function updateTotalSubscribers() {
+        let totalSubscribers = $("#subscriber-list li").length;
+
+        // σύνολο subscribers στο GA ως user property
+        if (typeof gtag === "function") {
+            gtag("set", "user_properties", { total_subscribers: totalSubscribers });
+            console.log("Updated total_subscribers in GA:", totalSubscribers);
+        }
+    }
 
     loadSubscribers();
 });
