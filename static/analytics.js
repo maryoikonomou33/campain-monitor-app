@@ -93,11 +93,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     //  errors από CM 
-    function trackApiError(action, email, errorMessage) {
-        
+    window.trackApiError = function (action, email) {
         const emailType = categorizeEmail(email);
     
-        
         gtag("event", "error_from_cm_api", {
             event_category: "API Errors",
             event_label: action === "add" ? "Add Subscriber Error" : "Remove Subscriber Error",
@@ -109,7 +107,8 @@ document.addEventListener("DOMContentLoaded", function () {
             event_label: action === "add" ? "Add Subscriber Error" : "Remove Subscriber Error",
             email_type: emailType
         });
-    }
+    };
+    
     
 
     
