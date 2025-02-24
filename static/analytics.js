@@ -5,9 +5,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     console.log("Analytics script loaded!");
 
-    
     let firstTypeTime = null;
 
+    // πρωτο type
     emailInput.addEventListener("input", function () {
         if (!firstTypeTime) {
             firstTypeTime = new Date().getTime();
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    
+    // για το add
     addButton.addEventListener("click", function () {
         const submitTime = new Date().getTime();
         const timeToSubmit = firstTypeTime ? (submitTime - firstTypeTime) / 1000 : 0;
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
         firstTypeTime = null; 
     });
 
-    
+    // για το remove
     document.getElementById("subscriber-list").addEventListener("click", function (event) {
         if (event.target.classList.contains("remove-btn")) {
             console.log("Remove button clicked!");
@@ -69,11 +69,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            
             const subscriberItems = Array.from(document.querySelectorAll("#subscriber-list li"));
             const totalSubscribers = subscriberItems.length;
             const subscriberIndex = subscriberItems.indexOf(listItem) + 1;
-
             const positionInfo = `${subscriberIndex}/${totalSubscribers}`;
             console.log(`Removed subscriber at position: ${positionInfo}`);
 
@@ -94,11 +92,30 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    //  errors από CM 
+    function trackApiError(action, email, errorMessage) {
+        
+        const emailType = categorizeEmail(email);
+    
+        
+        gtag("event", "error_from_cm_api", {
+            event_category: "API Errors",
+            event_label: action === "add" ? "Add Subscriber Error" : "Remove Subscriber Error",
+            email_type: emailType
+        });
+    
+        console.log("Event sent to Google Analytics:", {
+            event_category: "API Errors",
+            event_label: action === "add" ? "Add Subscriber Error" : "Remove Subscriber Error",
+            email_type: emailType
+        });
+    }
+    
+
     
     function categorizeEmail(email) {
         const genericEmailProviders = [
-            "gmail.com", "yahoo.com", "outlook.com", "hotmail.com",
-             "mail.com"
+            "gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com", "aol.com", "mail.com"
         ];
 
         const emailDomain = email.split("@")[1] || ""; 
@@ -111,4 +128,5 @@ document.addEventListener("DOMContentLoaded", function () {
             return "personal";
         }
     }
+
 });

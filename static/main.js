@@ -1,6 +1,6 @@
-$(document).ready(function() {
+$(document).ready(function () {
     function loadSubscribers() {
-        $.get('/api/subscribers', function(data) {
+        $.get('/api/subscribers', function (data) {
             let $list = $("#subscriber-list");
             $list.empty();
 
@@ -12,7 +12,7 @@ $(document).ready(function() {
             data.subscribers.forEach(sub => {
                 addSubscriberToUI(sub.email, sub.name);
             });
-        }).fail(function(err) {
+        }).fail(function (err) {
             console.error("Error loading subscribers:", err);
         });
     }
@@ -26,18 +26,18 @@ $(document).ready(function() {
         let listItem = $(`
             <li class="list-group-item" data-email="${email}">
                 ${email} (${name})
-                <button class="remove-btn">Remove</button>
+                <button class="remove-btn" data-email="${email}">Remove</button>
             </li>
         `);
 
-        listItem.find(".remove-btn").click(function() {
+        listItem.find(".remove-btn").click(function () {
             removeSubscriber(email);
         });
 
         $("#subscriber-list").append(listItem);
     }
 
-    $("#add-subscriber").click(function() {
+    $("#add-subscriber").click(function () {
         let name = $("#name").val().trim();
         let email = $("#email").val().trim();
 
@@ -51,33 +51,54 @@ $(document).ready(function() {
             return;
         }
 
+        // προσωρινο disable στο κουμπί για να τα διπλα  requests
+        $("#add-subscriber").prop("disabled", true);
+
         $.ajax({
             url: '/api/subscribers',
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify({ name, email }),
-            success: function(response) {
-                $("#name").val("");  
+            success: function (response) {
+                $("#name").val("");
                 $("#email").val("");
                 addSubscriberToUI(email, name);
             },
-            error: function(err) {
+            error: function (err) {
                 alert("Failed to add subscriber. Please try again.");
+
+                // τρακ τα λαθη
+                trackApiError("add", err.responseText || "Unknown error");
+            },
+            complete: function () {
+                // Επανενεργοποίηση του κουμπιού
+                $("#add-subscriber").prop("disabled", false);
             }
         });
     });
 
-    window.removeSubscriber = function(email) {
+    window.removeSubscriber = function (email) {
         if (!confirm(`Are you sure you want to remove ${email}?`)) return;
+
+        let listItem = $(`li[data-email='${email}']`);
+        let totalSubscribers = $("#subscriber-list li").length;
+        let subscriberIndex = listItem.index() + 1; 
+        let positionInfo = `${subscriberIndex}/${totalSubscribers}`;
 
         $.ajax({
             url: `/api/subscribers?email=${encodeURIComponent(email)}`,
             type: 'DELETE',
-            success: function(response) {
-                $(`li[data-email='${email}']`).remove();
+            success: function (response) {
+                listItem.remove();
+
+                // στέλνω πληροφορίες για το removed subscriber στο GA4
+                trackRemoveSubscriber(email, positionInfo);
             },
-            error: function(err) {
+            error: function (err) {
                 alert("Failed to remove subscriber. Please try again.");
+
+                // Καταγραφή λάθους στο GA4
+                trackApiError("remove", err.responseText || "Unknown error");
             }
         });
     };
