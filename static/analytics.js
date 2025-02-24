@@ -91,6 +91,9 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             updateTotalSubscribers(); // Ενημέρωση user property στο GA
+
+            
+            trackRemoveSubscriber(emailValue, positionInfo);
         }
     });
 
@@ -111,13 +114,34 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     };
 
+    
+    window.trackRemoveSubscriber = function (email, positionInfo) {
+        let emailType = categorizeEmail(email);
+
+        if (typeof gtag === "function") {
+            gtag("event", "remove_subscriber", {
+                event_category: "Subscription",
+                event_label: "Remove Subscriber Button",
+                removed_position: positionInfo,
+                email_type: emailType
+            });
+
+            console.log("Event sent to Google Analytics:", {
+                removed_position: positionInfo,
+                email_type: emailType
+            });
+        } else {
+            console.warn("Google Analytics (gtag) is not loaded yet.");
+        }
+    };
+
     // subscribers στο GA
     function updateTotalSubscribers() {
         let totalSubscribers = document.querySelectorAll("#subscriber-list li").length;
 
         if (typeof gtag === "function") {
             gtag("set", "user_properties", { total_subscribers: totalSubscribers });
-            console.log("Updated total_subscribers in GA4:", totalSubscribers);
+            console.log("Updated total_subscribers in GA:", totalSubscribers);
         }
     }
 
