@@ -160,4 +160,49 @@ document.addEventListener("DOMContentLoaded", function () {
             return "personal";
         }
     }
+
+    let formFilled = false;
+    let formAbandonTimeout;
+
+function trackFormAbandonment() {
+    if (!formFilled) return; // αν δεν συθμπληρωθει δεν στέλνει event
+
+    if (typeof gtag === "function") {
+        gtag("event", "abandon_form", {
+            event_category: "User Behavior",
+            event_label: "User Filled Form but Did Not Submit"
+        });
+
+        console.log("Event sent to Google Analytics: User abandoned subscription form");
+    }
+
+    formFilled = false; // Reset για επόμενη χρήση
+}
+
+
+function checkFormCompletion() {
+    const emailValue = emailInput.value.trim();
+    const nameValue = nameInput.value.trim();
+
+    if (emailValue !== "" && nameValue !== "") {
+        formFilled = true;
+        clearTimeout(formAbandonTimeout);
+        formAbandonTimeout = setTimeout(trackFormAbandonment, 5000); // 5 δευτερόλεπτα χωρίς "Add"
+    } else {
+        formFilled = false;
+        clearTimeout(formAbandonTimeout);
+    }
+}
+
+
+emailInput.addEventListener("input", checkFormCompletion);
+nameInput.addEventListener("input", checkFormCompletion);
+
+
+addButton.addEventListener("click", function () {
+    clearTimeout(formAbandonTimeout);
+    formFilled = false;
+});
+
+
 });
