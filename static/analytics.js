@@ -3,16 +3,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const nameInput = document.getElementById("name");
     const addButton = document.getElementById("add-subscriber");
 
-    // 1. Χρόνος πρώτης πληκτρολόγησης
+    console.log("Analytics script loaded!");
+
+    
     let firstTypeTime = null;
 
     emailInput.addEventListener("input", function () {
         if (!firstTypeTime) {
-            firstTypeTime = new Date().getTime(); 
+            firstTypeTime = new Date().getTime();
+            console.log("⌨️ First character typed at:", firstTypeTime);
         }
     });
 
-    // 2. Καταγραφή "add_subscriber" event
+    
     addButton.addEventListener("click", function () {
         const submitTime = new Date().getTime();
         const timeToSubmit = firstTypeTime ? (submitTime - firstTypeTime) / 1000 : 0; 
@@ -20,57 +23,70 @@ document.addEventListener("DOMContentLoaded", function () {
         const emailValue = emailInput.value.trim();
         const nameValue = nameInput.value.trim();
 
-        // Έλεγχος αν το email είναι "generic" ή "personal"
+       
         const genericEmailProviders = [
             "gmail.com", "yahoo.com", "outlook.com", "hotmail.com",
             "icloud.com", "aol.com", "mail.com", "zoho.com"
         ];
-        const emailDomain = emailValue.split("@")[1] || ""; 
-        const emailType = genericEmailProviders.includes(emailDomain) ? "generic" : "personal"; 
+        const emailDomain = emailValue.split("@")[1] || "";
+        const emailType = genericEmailProviders.includes(emailDomain) ? "generic" : "personal";
 
         let hasError = false;
         if (!emailValue || !nameValue) {
             hasError = true;
-            alert("Please fill in both Name and Email.");
+            alert("⚠️ Please fill in both Name and Email.");
+            console.warn("⚠️ Submission error: Missing input fields");
         }
 
-        // παει στο Google An
+        
         gtag("event", "add_subscriber", {
             event_category: "Subscription",
             event_label: "Add Subscriber Button",
-            time_to_submit: timeToSubmit, 
-            email_type: emailType,        
-            submission_error: hasError   
-        });
-
-        console.log("Event sent to Google Analytics", {
             time_to_submit: timeToSubmit,
             email_type: emailType,
             submission_error: hasError
         });
 
-        firstTypeTime = null; // Reset για επόμενα events
+        console.log("📊 Event sent to Google Analytics:", {
+            time_to_submit: timeToSubmit,
+            email_type: emailType,
+            submission_error: hasError
+        });
+
+        firstTypeTime = null;
     });
 
-    // 3. "remove_subscriber" event
+    
     document.getElementById("subscriber-list").addEventListener("click", function (event) {
         if (event.target.classList.contains("remove-btn")) {
+            console.log("🗑️ Remove button clicked!");
+
             const listItem = event.target.closest("li");
+
+            if (!listItem) {
+                console.warn("⚠️ No list item found for deletion!");
+                return;
+            }
+
             const emailValue = listItem.getAttribute("data-email");
 
-            if (!emailValue) return; 
+            if (!emailValue) {
+                console.warn("⚠️ No email found for deleted subscriber!");
+                return;
+            }
 
-            
+            // Βρίσκουμε τη θέση του subscriber
             const subscriberItems = Array.from(document.querySelectorAll("#subscriber-list li"));
             const totalSubscribers = subscriberItems.length;
             const subscriberIndex = subscriberItems.indexOf(listItem) + 1; 
 
             const positionInfo = `${subscriberIndex}/${totalSubscribers}`;
+            console.log(` Removed subscriber at position: ${positionInfo}`);
 
-            const emailDomain = emailValue.split("@")[1] || ""; 
-            const emailType = genericEmailProviders.includes(emailDomain) ? "generic" : "personal"; 
+            const emailDomain = emailValue.split("@")[1] || "";
+            const emailType = genericEmailProviders.includes(emailDomain) ? "generic" : "personal";
 
-            // το event παει στο GAnalytics
+           
             gtag("event", "remove_subscriber", {
                 event_category: "Subscription",
                 event_label: "Remove Subscriber Button",
@@ -78,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 email_type: emailType
             });
 
-            console.log("Event sent to Google Analytics", {
+            console.log("Event sent to Google Analytics:", {
                 removed_position: positionInfo,
                 email_type: emailType
             });
