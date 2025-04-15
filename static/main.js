@@ -4,7 +4,7 @@ $(document).ready(function () {
             let $list = $("#subscriber-list");
             $list.empty();
 
-            let totalSubscribers = data.subscribers ? data.subscribers.length : 0; // Υπολογισμός αριθμού subscribers
+            let totalSubscribers = data.subscribers ? data.subscribers.length : 0; // αριθμος subscribers
 
             if (!data.subscribers || data.subscribers.length === 0) {
                 $list.append(`<li class="list-group-item">No subscribers found.</li>`);

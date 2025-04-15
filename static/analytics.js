@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         updateTotalSubscribers(); // Ενημέρωση user property στο GA
-
+   
         firstTypeTime = null; 
     });
 
